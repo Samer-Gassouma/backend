@@ -11,7 +11,7 @@ router.get('/get-ip', (req, res) => {
     fetch('https://api.ipify.org?format=json')
         .then(response => response.json())
         .then(data => {
-            const sanitizedIp = data.ip.replace(/\./g, '-'); // Replace dots with hyphens
+            const sanitizedIp = data.ip.replace(/\./g, '-');
             console.log('Your Public IP Address:', sanitizedIp);
             res.json({ ip: sanitizedIp });
         })

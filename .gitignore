@@ -6,11 +6,12 @@
 .pnp.js
 .yarn/install-state.gz
 
-/upload
+/uploads
 /received
 # testing
 /coverage
-
+/.wwebjs_cache
+/.wwebjs_auth
 # next.js
 /.next/
 /out/
