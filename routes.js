@@ -47,6 +47,41 @@ router.get('/ready/:sessionId', async (req, res) => {
     }
 });
 
+router.get('/status/:sessionId', async (req, res) => {
+    const { sessionId } = req.params;
+    try {
+        const session = await sessionManager.createSession(sessionId);
+        res.json(session.client.info);
+    } catch (error) {
+        console.error('Error fetching session status:', error.message);
+        res.status(500).json({ error: 'Error fetching session status', message: error.message });
+    }
+});
+
+
+router.get('/contacts/:sessionId', async (req, res) => {
+    const { sessionId } = req.params;
+    try {
+        const session = await sessionManager.createSession(sessionId);
+        if (!session.ready) {
+            return res.status(503).json({ error: 'Client not ready' });
+        }
+
+        console.log('Fetching contacts');
+        const contacts = await session.client.getContacts();
+        const formattedContacts = contacts.map(contact => ({
+            id: contact.id._serialized,
+            name: contact.name || contact.id.user,
+            phone: contact.number || 'N/A'
+        }));
+        res.json(formattedContacts);
+    } catch (error) {
+        console.error('Error fetching contacts:', error.message);
+        res.status(500).json({ error: 'Error fetching contacts', message: error.message });
+    }
+}
+);
+
 router.get('/chats/:sessionId', async (req, res) => {
     const { sessionId } = req.params;
     try {
@@ -94,7 +129,7 @@ const processMessages = async (messages, sessionId) => {
             const mediaPath = path.join(mediaDir, filename);
 
             fs.writeFileSync(mediaPath, media.data, { encoding: 'base64' });
-            MediaMessages.push({ id: message.id.id, path: mediaPath,mimetype: media.mimetype });
+            MediaMessages.push({ id: message.id.id, path: mediaPath, mimetype: media.mimetype });
         }
     }));
 
@@ -227,7 +262,7 @@ router.post('/upload/:sessionId', upload.single('file'), async (req, res) => {
     }
 
     try {
-        
+
         await sessionManager.createSession(sessionId);
         await sessionManager.sendMedia(sessionId, recipientId, file.path);
 
